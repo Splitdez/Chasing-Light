@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Scientists Measured the Speed of Light</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #05080f;
+    --deep: #08101e;
+    --gold: #f0c060;
+    --gold-dim: #a07830;
+    --amber: #e8a030;
+    --sky: #70c8f0;
+    --sky-dim: #3080b0;
+    --white: #f0ece0;
+    --muted: #8090a8;
+    --line: rgba(240,192,96,0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Crimson Pro', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Starfield */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 45% 8%, rgba(240,192,96,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 25%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 55%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 85% 12%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 92% 70%, rgba(112,200,240,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 38% 75%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 18% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 90%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.35) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 60px 32px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 72px;
+    position: relative;
+  }
+
+  .header-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.1s forwards;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--white);
+    margin-bottom: 16px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.25s forwards;
+  }
+
+  header h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .header-sub {
+    font-size: 1.15rem;
+    color: var(--muted);
+    font-style: italic;
+    font-weight: 300;
+    max-width: 520px;
+    margin: 0 auto 28px;
+    line-height: 1.5;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
+  }
+
+  .c-value {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--sky);
+    background: rgba(112,200,240,0.08);
+    border: 1px solid rgba(112,200,240,0.25);
+    padding: 8px 20px;
+    letter-spacing: 0.12em;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.55s forwards;
+  }
+
+  .header-rule {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+    margin-top: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.65s forwards;
+  }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 0;
+  }
+
+  /* Vertical line */
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 28px;
+    top: 8px;
+    bottom: 8px;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--line) 8%, var(--line) 92%, transparent);
+  }
+
+  .entry {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 0 28px;
+    margin-bottom: 52px;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s, transform 0.6s;
+  }
+
+  .entry.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Node */
+  .node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 4px;
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 10px rgba(240,192,96,0.5);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .dot.final {
+    background: var(--sky);
+    box-shadow: 0 0 14px rgba(112,200,240,0.7);
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Card */
+  .card {
+    background: rgba(255,255,255,0.028);
+    border: 1px solid rgba(240,192,96,0.12);
+    padding: 24px 28px;
+    position: relative;
+    transition: border-color 0.3s, background 0.3s;
+  }
+
+  .card:hover {
+    background: rgba(255,255,255,0.045);
+    border-color: rgba(240,192,96,0.28);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 20px;
+    width: 3px;
+    height: 24px;
+    background: var(--gold);
+    opacity: 0.5;
+    transition: opacity 0.3s, height 0.3s;
+  }
+
+  .card:hover::before {
+    opacity: 1;
+    height: 36px;
+  }
+
+  .card.sky-accent::before { background: var(--sky); }
+
+  .card-top {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .year {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    opacity: 0.85;
+  }
+
+  .year.sky { color: var(--sky); }
+
+  .scientist {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.1;
+  }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border: 1px solid;
+    color: var(--gold-dim);
+    border-color: rgba(160,120,48,0.4);
+    background: rgba(160,120,48,0.07);
+    margin-left: auto;
+  }
+
+  .tag.method { color: var(--sky-dim); border-color: rgba(48,128,176,0.4); background: rgba(48,128,176,0.07); }
+
+  .card-method {
+    font-size: 0.78rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+    opacity: 0.75;
+  }
+
+  .card-desc {
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: rgba(240,236,224,0.82);
+    font-weight: 300;
+    margin-bottom: 14px;
+  }
+
+  .card-footer {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .accuracy {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  .accuracy span {
+    color: var(--amber);
+  }
+
+  .significance {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* Final entry special styling */
+  .entry.final-entry .card {
+    background: rgba(112,200,240,0.05);
+    border-color: rgba(112,200,240,0.2);
+  }
+
+  .entry.final-entry .card:hover {
+    background: rgba(112,200,240,0.09);
+    border-color: rgba(112,200,240,0.4);
+  }
+
+  .defined-value {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 1.1rem;
+    color: var(--sky);
+    letter-spacing: 0.08em;
+    margin: 14px 0 8px;
+    padding: 12px 16px;
+    background: rgba(112,200,240,0.06);
+    border-left: 2px solid var(--sky);
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 80px;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+    opacity: 0;
+    animation: fadeUp 1s 1s forwards;
+  }
+
+  .footer-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .footer-text {
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--muted);
+    font-weight: 300;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsive */
+  @media (max-width: 560px) {
+    .container { padding: 40px 18px 60px; }
+    .card { padding: 18px 18px; }
+    .card-top { gap: 8px; }
+    .tag { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="header-label">A History of Scientific Measurement</div>
+    <h1>Chasing <em>Light</em></h1>
+    <p class="header-sub">How scientists across three centuries measured one of nature's most fundamental constants</p>
+    <div class="c-value">c = 299,792,458 m/s &nbsp;·&nbsp; exact, by definition</div>
+    <div class="header-rule"></div>
+  </header>
+
+  <div class="timeline">
+
+    <!-- Galileo -->
+    <div class="entry">
+      <div class="node"><div class="dot"></div></div>
+      <div class="card">
+        <div class="card-top">
+          <span class="year">c. 1638</span>
+          <span class="scientist">Galileo Galilei</span>
+          <span class="tag">Observational</span>
+        </div>
+        <div class="card-method">Method: Lantern Timing Experiment</div>
+        <p class="card-desc">Galileo stationed two assistants on hilltops roughly a mile apart, each holding a lantern. One would uncover theirs; the moment the second saw the light, they'd uncover theirs back. The idea was to time the round-trip delay. The result: no measurable delay at all — not because light is instantaneous, but because the human reaction time swamped any real signal.</p>
+        <div class="card-footer">
+          <span class="accuracy">Accuracy: <span>Inconclusive</span></span>
+          <span class="significance">First serious empirical attempt — proved light was far too fast for simple human timing.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rømer -->
+    <div class="entry">
+      <div class="node"><div class="dot"></div></div>
+      <div class="card">
+        <div class="card-top">
+          <span class="year">1676</span>
+          <span class="scientist">Ole Rømer</span>
+          <span class="tag">Astronomical</span>
+        </div>
+        <div class="card-method">Method: Eclipses of Jupiter's Moon Io</div>
+        <p class="card-desc">Rømer noticed that Io's eclipses behind Jupiter arrived about 22 minutes later when Earth was on the far side of its orbit from Jupiter than when it was close. He correctly deduced this delay was due to light having to cross the extra width of Earth's orbit. This was the first demonstration that light travels at a finite speed — a genuinely revolutionary idea at the time.</p>
+        <div class="card-footer">
+          <span class="accuracy">Estimate: <span>~220,000 km/s</span> (~26% low)</span>
+          <span class="significance">First quantitative evidence that light has a finite, measurable speed.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bradley -->
+    <div class="entry">
+      <div class="node"><div class="dot"></div></div>
+      <div class="card">
+        <div class="card-top">
+          <span class="year">1728</span>
+          <span class="scientist">James Bradley</span>
+          <span class="tag">Astronomical</span>
+        </div>
+        <div class="card-method">Method: Stellar Aberration</div>
+        <p class="card-desc">Bradley discovered that stars appear to shift position slightly over the year — a phenomenon called stellar aberration. This happens because Earth's orbital velocity "tilts" the apparent direction of incoming starlight, just as rain seems to fall at an angle when you run through it. By measuring this tilt, Bradley calculated the ratio of Earth's orbital speed to the speed of light with unprecedented precision.</p>
+        <div class="card-footer">
+          <span class="accuracy">Estimate: <span>~301,000 km/s</span> (~0.4% high)</span>
+          <span class="significance">Far more accurate than Rømer; established aberration as a powerful astronomical tool.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fizeau -->
+    <div class="entry">
+      <div class="node"><div class="dot"></div></div>
+      <div class="card">
+        <div class="card-top">
+          <span class="year">1849</span>
+          <span class="scientist">Hippolyte Fizeau</span>
+          <span class="tag">Terrestrial</span>
+        </div>
+        <div class="card-method">Method: Rotating Toothed Wheel</div>
+        <p class="card-desc">Fizeau shone a beam of light through a gap in a spinning toothed wheel, sending it 8 km to a mirror and back. At just the right rotation speed, the returning beam slipped back through the next gap — rather than being blocked by a tooth. Timing this gave the speed of light. This was the first successful entirely terrestrial (no stars needed) measurement.</p>
+        <div class="card-footer">
+          <span class="accuracy">Estimate: <span>~313,300 km/s</span> (~4.5% high)</span>
+          <span class="significance">Proved light speed could be measured in a laboratory setting, opening the door to refinement.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Foucault -->
+    <div class="entry">
+      <div class="node"><div class="dot"></div></div>
+      <div class="card">
+        <div class="card-top">
+          <span class="year">1862</span>
+          <span class="scientist">Léon Foucault</span>
+          <span class="tag">Terrestrial</span>
+        </div>
+        <div class="card-method">Method: Rotating Mirror</div>
+        <p class="card-desc">Foucault replaced the toothed wheel with a rapidly spinning mirror. Light bounced off the mirror, travelled to a distant fixed mirror, and came back — but in that tiny interval the spinning mirror had rotated slightly. The tiny angular deflection of the returning beam precisely encoded the speed of light. The apparatus could be used indoors over short distances, making it highly practical.</p>
+        <div class="card-footer">
+          <span class="accuracy">Estimate: <span>298,000 km/s</span> (~0.6% low)</span>
+          <span class="significance">Greatly refined Fizeau's result; rotating-mirror became the gold standard for decades.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Maxwell -->
+    <div class="entry">
+      <div class="node"><div class="dot"></div></div>
+      <div class="card">
+        <div class="card-top">
+          <span class="year">1865</span>
+          <span class="scientist">James Clerk Maxwell</span>
+          <span class="tag">Theoretical</span>
+        </div>
+        <div class="card-method">Method: Electromagnetic Theory</div>
+        <p class="card-desc">Maxwell unified electricity and magnetism into a single elegant framework. His equations predicted the existence of electromagnetic waves — and crucially, their speed could be derived directly from two measurable electric and magnetic constants. The number that fell out, around 310,000 km/s, was tantalizingly close to measured light speeds. Maxwell concluded that light itself <em>is</em> an electromagnetic wave.</p>
+        <div class="card-footer">
+          <span class="accuracy">Derived from constants: <span>~310,000 km/s</span></span>
+          <span class="significance">Unified optics with electromagnetism; light speed became a predicted quantity, not just a measured one.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rosa & Dorsey -->
+    <div class="entry">
+      <div class="node"><div class="dot"></div></div>
+      <div class="card">
+        <div class="card-top">
+          <span class="year">1907</span>
+          <span class="scientist">Rosa &amp; Dorsey</span>
+          <span class="tag">Electromagnetic</span>
+        </div>
+        <div class="card-method">Method: Electromagnetic Constants</div>
+        <p class="card-desc">Working at the US National Bureau of Standards, Edward Rosa and Noah Dorsey took Maxwell's theoretical framework and turned it into a precision measurement. By carefully measuring the ratio of electromagnetic units (the ratio of the e.m.u. to e.s.u. of electric charge), they derived the speed of light indirectly from electrical experiments alone — no optics required.</p>
+        <div class="card-footer">
+          <span class="accuracy">Result: <span>299,784 km/s</span> (~0.003% off)</span>
+          <span class="significance">Confirmed Maxwell's theory with high precision; electromagnetic methods proved competitive with optical ones.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Michelson -->
+    <div class="entry">
+      <div class="node"><div class="dot"></div></div>
+      <div class="card">
+        <div class="card-top">
+          <span class="year">1879 – 1927</span>
+          <span class="scientist">Albert Michelson</span>
+          <span class="tag">Optical / Precision</span>
+        </div>
+        <div class="card-method">Method: Refined Rotating Mirror</div>
+        <p class="card-desc">Michelson dedicated much of his career to measuring light speed with ever-greater precision, winning the Nobel Prize in Physics in 1907 partly for this work. He refined Foucault's rotating-mirror method over decades. His final series (1926–27) bounced light between Mt. Wilson and Mt. San Antonio — 35 km apart — achieving a precision that stood for decades. He also designed a 1.6 km evacuated pipe to eliminate air's effect.</p>
+        <div class="card-footer">
+          <span class="accuracy">Best result: <span>299,796 km/s</span> (~0.001% off)</span>
+          <span class="significance">Set the definitive standard for optical measurement; his precision drove all later refinements.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Froome -->
+    <div class="entry">
+      <div class="node"><div class="dot"></div></div>
+      <div class="card">
+        <div class="card-top">
+          <span class="year">1958</span>
+          <span class="scientist">K.D. Froome</span>
+          <span class="tag">Microwave</span>
+        </div>
+        <div class="card-method">Method: Microwave Interferometry</div>
+        <p class="card-desc">Froome at the UK's National Physical Laboratory used microwave interferometry rather than visible light. Microwaves can be handled with much greater phase precision than optical waves, allowing extremely accurate measurement of wavelength and frequency — and thus speed. His result was so precise that it became the accepted international standard value for over a decade.</p>
+        <div class="card-footer">
+          <span class="accuracy">Result: <span>299,792.5 ± 0.1 km/s</span></span>
+          <span class="significance">Shifted measurement from optics into the microwave domain; unprecedented accuracy for the era.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1983 CGPM -->
+    <div class="entry final-entry">
+      <div class="node"><div class="dot final"></div></div>
+      <div class="card sky-accent">
+        <div class="card-top">
+          <span class="year sky">1983</span>
+          <span class="scientist">17th CGPM</span>
+          <span class="tag method">Definition</span>
+        </div>
+        <div class="card-method" style="color: var(--sky); opacity: 0.85;">The End of Measurement — The Beginning of Definition</div>
+        <p class="card-desc">By the early 1980s, laser-based measurements had made the speed of light more precisely known than the metre itself — meaning the metre had become the limiting factor in accuracy. The 17th General Conference on Weights and Measures made a radical decision: fix the speed of light <em>by definition</em>, and redefine the metre in terms of it.</p>
+        <span class="defined-value">c ≡ 299,792,458 metres per second (exact)</span>
+        <p class="card-desc" style="margin-bottom: 0;">The metre is now defined as the distance light travels in vacuum in 1⁄299,792,458 of a second. This ended three centuries of measurement — not because we ran out of precision, but because we had achieved so much of it that the question changed. We no longer <em>measure</em> the speed of light; it is now a fixed cornerstone of our system of units.</p>
+        <div class="card-footer">
+          <span class="accuracy" style="color: var(--sky); opacity: 0.8;">Exact by definition — no uncertainty</span>
+          <span class="significance">The metre is now defined by light speed, not the other way round.</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /timeline -->
+
+  <footer>
+    <div class="footer-eyebrow">Reflection</div>
+    <p class="footer-text">From Galileo's hilltop lanterns to a laser-defined metre, each generation built on the last — not just in accuracy, but in understanding what light fundamentally <em>is</em>.</p>
+  </footer>
+
+</div><!-- /container -->
+
+<script>
+  // Intersection observer for staggered entry animations
+  const entries = document.querySelectorAll('.entry');
+  const obs = new IntersectionObserver((items) => {
+    items.forEach(item => {
+      if (item.isIntersecting) {
+        item.target.classList.add('visible');
+        obs.unobserve(item.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  entries.forEach((entry, i) => {
+    entry.style.transitionDelay = `${i * 0.04}s`;
+    obs.observe(entry);
+  });
+</script>
+</body>
+</html>
